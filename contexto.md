@@ -11,7 +11,8 @@ novamente", que sorteia um Pokémon diferente.
 - Tentativas: 6 por rodada.
 - Entrada: campo de texto com autocomplete da lista de nomes (vinda da API).
   Comparação sem diferenciar maiúsculas/minúsculas, acentos e hífens.
-- Dicas (uma nova a cada erro, nesta ordem):
+- Dicas (a 1ª já aparece no início da rodada; uma nova a cada erro, nesta ordem,
+  de forma que a 6ª dica aparece antes da última tentativa):
   1. Geração
   2. Tipo(s)
   3. Altura e peso
