@@ -397,3 +397,238 @@ body {
   .screen { min-height: calc(100dvh - 1rem); font-size: clamp(0.7rem, 1.75cqi, 1rem); border-radius: 0.8rem; }
   .stage { min-height: 13em; }
 }
+
+/* ==========================================================================
+   Parte 2: visual de programa de TV (raios, silhueta, "?", título)
+   ========================================================================== */
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #a8100c;
+}
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(70% 60% at 0% 100%, rgba(255, 150, 20, 0.85), transparent 70%),
+    radial-gradient(60% 50% at 100% 100%, rgba(255, 120, 20, 0.7), transparent 70%),
+    radial-gradient(90% 80% at 50% 0%, rgba(120, 0, 0, 0.45), transparent 70%);
+}
+
+/* Só estes elementos giram; o gradiente é desenhado uma única vez. */
+.bg__rays {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(220%, 120dvh);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: repeating-conic-gradient(from 0deg, #f03a22 0 6deg, #c8180f 6deg 12deg);
+  animation: spin 70s linear infinite;
+}
+
+.stage__burst {
+  background:
+    repeating-conic-gradient(from 0deg, #eefcff 0 2.6deg, transparent 2.6deg 7.2deg),
+    radial-gradient(circle, #f2fdff 0 20%, #9fdbe3 38%, #4aa6b6 68%, #3a8fa3 100%);
+  -webkit-mask-image: radial-gradient(circle, #000 0 46%, transparent 71%);
+  mask-image: radial-gradient(circle, #000 0 46%, transparent 71%);
+  animation: spin 50s linear infinite reverse;
+}
+
+.bg__rays,
+.stage__burst,
+.qmark { will-change: transform; }
+
+/* Silhueta: --reveal vai de 0 (preta e desfocada) a 1 (colorida e nítida). */
+.mon {
+  filter:
+    brightness(var(--reveal))
+    blur(calc((1 - var(--reveal)) * 0.3em))
+    drop-shadow(0 0.3em 0.4em rgba(0, 0, 0, 0.35));
+  transition: filter 0.9s ease;
+}
+.screen[data-state="loading"] .mon { transition: none; }
+
+.qmark {
+  color: var(--yellow);
+  -webkit-text-stroke: 0.12em var(--blue-deep);
+  paint-order: stroke fill;
+  text-shadow: 0.05em 0.07em 0 var(--blue-deep), 0 0.1em 0.3em rgba(0, 0, 0, 0.45);
+  rotate: 8deg;
+  animation: qpulse 1.6s ease-in-out infinite;
+}
+
+/* Título desenhado pelo site (fonte própria, não é o logotipo oficial). */
+.logo {
+  margin: 0.1em 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 3em;
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  color: var(--yellow);
+  -webkit-text-stroke: 0.14em var(--blue-deep);
+  paint-order: stroke fill;
+  text-shadow: 0 0.07em 0 var(--blue-deep), 0 0.12em 0.25em rgba(0, 0, 0, 0.5);
+  rotate: -3deg;
+}
+.logo span { display: block; font-size: 0.55em; color: #fff; }
+
+/* Bolas de tentativa */
+.ball, .ball-spin {
+  border-radius: 50%;
+  border: 0.12em solid #1d1d1d;
+  background:
+    radial-gradient(circle, #fff 0 0.16em, #1d1d1d 0.17em 0.3em, transparent 0.31em),
+    linear-gradient(180deg, var(--red) 0 46%, #1d1d1d 46% 54%, #fff 54%);
+}
+.ball {
+  width: 1.5em;
+  height: 1.5em;
+  transition: transform 0.4s var(--ease-pop), opacity 0.3s ease;
+}
+.ball.is-used { opacity: 0.3; transform: scale(0.7); filter: grayscale(1); }
+.ball-spin { width: 3.4em; height: 3.4em; animation: spin 0.9s linear infinite; }
+
+/* Tipos */
+.chip {
+  padding: 0.05em 0.65em;
+  border-radius: 99em;
+  background: var(--c, #777);
+  color: #fff;
+  font-size: 0.9em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+}
+.t-normal { --c: #8a8a59; }  .t-fire { --c: #e8702a; }    .t-water { --c: #4a79ea; }
+.t-electric { --c: #d4a400; } .t-grass { --c: #4fa63a; }  .t-ice { --c: #4fb5b0; }
+.t-fighting { --c: #b82a21; } .t-poison { --c: #9a3a9a; } .t-ground { --c: #b0894a; }
+.t-flying { --c: #7d6bd6; }   .t-psychic { --c: #e8457a; } .t-bug { --c: #8a9a12; }
+.t-rock { --c: #9a8528; }     .t-ghost { --c: #64477a; }   .t-dragon { --c: #5a2cd8; }
+.t-dark { --c: #5a4538; }     .t-steel { --c: #7d7da0; }   .t-fairy { --c: #d97a96; }
+
+/* Nome na revelação final */
+.stage__name {
+  font-family: var(--font-display);
+  font-size: 2.1em;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--yellow);
+  -webkit-text-stroke: 0.14em var(--blue-deep);
+  paint-order: stroke fill;
+  text-shadow: 0 0.07em 0 var(--blue-deep), 0 0.12em 0.3em rgba(0, 0, 0, 0.5);
+  text-wrap: balance;
+}
+.screen[data-phase="won"] .stage__name,
+.screen[data-phase="lost"] .stage__name { opacity: 1; }
+.screen[data-phase="won"] .result__title { color: var(--green); }
+.screen[data-phase="lost"] .result__title { color: #ff8a7a; }
+
+/* Efeitos de vidro, linhas de varredura e brilho da tela */
+.screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.09) 0 20%, transparent 20.2%);
+}
+.screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.13) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 100% at 50% 50%, transparent 62%, rgba(0, 0, 0, 0.45) 100%);
+  box-shadow: inset 0 0 3em rgba(0, 0, 0, 0.55);
+  border-radius: inherit;
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Parte 3: animações (somente transform, opacity e propriedades individuais)
+   ========================================================================== */
+
+@keyframes spin   { to { rotate: 360deg; } }
+@keyframes qpulse { 0%, 100% { scale: 1; } 50% { scale: 1.12; } }
+
+@keyframes tv-on {
+  0%   { transform: scale(1, 0.004); opacity: 0; }
+  25%  { transform: scale(1, 0.004); opacity: 1; }
+  70%  { transform: scale(1, 1.04); }
+  100% { transform: scale(1, 1); opacity: 1; }
+}
+@keyframes power-glow { 0% { opacity: 0.85; } 100% { opacity: 0; } }
+@keyframes flash      { 0% { opacity: 0; } 14% { opacity: 1; } 100% { opacity: 0; } }
+
+@keyframes pop-in {
+  0%   { opacity: 0; transform: translateX(1.2em) scale(0.95); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes name-in {
+  0%   { opacity: 0; transform: translateY(0.8em) scale(0.4) rotate(-6deg); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes hop {
+  0%, 100% { transform: translateY(0); }
+  40%      { transform: translateY(-6%) scale(1.04); }
+}
+@keyframes wobble {
+  0%, 100% { transform: none; }
+  25% { transform: translateX(-3%) rotate(-3deg); }
+  75% { transform: translateX(3%) rotate(3deg); }
+}
+@keyframes shake {
+  0%, 100% { transform: none; }
+  20%, 60% { transform: translateX(-0.4em); }
+  40%, 80% { transform: translateX(0.4em); }
+}
+
+.screen.is-powering { animation: tv-on 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.screen.is-powering .flash { animation: power-glow 0.85s ease-out; }
+
+.screen[data-phase="won"] .flash,
+.screen[data-phase="lost"] .flash { animation: flash 0.75s ease-out; }
+
+.screen[data-phase="won"] .stage__name,
+.screen[data-phase="lost"] .stage__name { animation: name-in 0.7s var(--ease-pop) 0.35s both; }
+.screen[data-phase="won"] .mon { animation: hop 0.6s var(--ease-pop) 0.25s; }
+
+.hint.is-open { animation: pop-in 0.45s var(--ease-pop); }
+.wrong li { animation: pop-in 0.35s var(--ease-pop); }
+.stage.is-wrong .mon { animation: wobble 0.4s ease-in-out; }
+.guess.is-shake { animation: shake 0.35s ease-in-out; }
+
+/* Aba em segundo plano: pausa todas as animações contínuas. */
+[data-hidden] *,
+[data-hidden] *::before,
+[data-hidden] *::after { animation-play-state: paused !important; }
+
+/* Menos movimento: sem giro, pulso, flash nem linhas de varredura. */
+@media (prefers-reduced-motion: reduce) {
+  .bg__rays, .stage__burst, .qmark { animation: none; will-change: auto; }
+  .screen.is-powering,
+  .screen.is-powering .flash,
+  .screen[data-phase] .flash,
+  .screen[data-phase] .stage__name,
+  .screen[data-phase="won"] .mon,
+  .hint.is-open, .wrong li, .stage.is-wrong .mon, .guess.is-shake { animation: none; }
+  .flash { display: none; }
+  .screen::after { background: radial-gradient(120% 100% at 50% 50%, transparent 62%, rgba(0, 0, 0, 0.45) 100%); }
+  .mon { transition-duration: 0.2s; }
+  .ball, .btn { transition: none; }
+}
