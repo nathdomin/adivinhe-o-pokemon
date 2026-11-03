@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Adivinhe o Pokémon</title>
+  <meta name="description" content="Descubra o Pokémon pela silhueta e pelas dicas. A cada erro, a imagem se revela um pouco mais.">
+  <meta name="theme-color" content="#14122b">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://pokeapi.co">
+  <link rel="preconnect" href="https://raw.githubusercontent.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@600;800&display=swap">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <main class="tv" id="tv">
+    <div class="tv__body">
+
+      <!-- ===== Tela da TV ===== -->
+      <div class="screen" id="screen" data-state="start" data-phase="idle" style="--reveal: 0">
+
+        <div class="bg" aria-hidden="true">
+          <div class="bg__rays"></div>
+        </div>
+
+        <!-- ---------- Jogo ---------- -->
+        <section class="game" id="game" aria-label="Jogo">
+          <header class="hud">
+            <div class="hud__tries" id="tries" role="img" aria-label="Tentativas restantes: 6"></div>
+            <dl class="hud__stats">
+              <div><dt>Pontos</dt><dd id="score">0</dd></div>
+              <div><dt>Sequência</dt><dd id="streak">0</dd></div>
+            </dl>
+          </header>
+
+          <div class="stage" id="stage">
+            <div class="stage__burst" aria-hidden="true"></div>
+            <img class="mon" id="mon" alt="Silhueta de um Pokémon misterioso" width="475" height="475" decoding="async">
+            <p class="stage__name" id="stage-name" aria-hidden="true"></p>
+          </div>
+
+          <div class="side">
+            <div class="qmark" aria-hidden="true">?</div>
+
+            <ol class="hints" id="hints" aria-label="Dicas"></ol>
+
+            <ul class="wrong" id="wrong" aria-label="Palpites errados"></ul>
+
+            <p class="status" id="status" role="status" aria-live="polite"></p>
+
+            <form class="guess" id="guess-form" autocomplete="off" novalidate>
+              <div class="guess__field">
+                <label class="sr-only" for="guess-input">Nome do Pokémon</label>
+                <input id="guess-input" class="guess__input" type="text" inputmode="text"
+                       placeholder="Qual é o Pokémon?" autocapitalize="off" autocorrect="off" spellcheck="false"
+                       role="combobox" aria-expanded="false" aria-controls="suggestions" aria-autocomplete="list">
+                <ul class="suggest" id="suggestions" role="listbox" hidden></ul>
+              </div>
+              <div class="guess__actions">
+                <button class="btn btn--primary" type="submit">Chutar</button>
+                <button class="btn btn--ghost" type="button" id="skip-btn">Pular dica</button>
+              </div>
+            </form>
+
+            <div class="result" id="result" hidden>
+              <p class="result__title" id="result-title"></p>
+              <p class="result__text" id="result-text"></p>
+              <div class="guess__actions">
+                <button class="btn btn--primary" type="button" id="again-btn">Jogar de novo</button>
+                <button class="btn btn--ghost" type="button" id="menu-btn">Mudar dificuldade</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ---------- Início ---------- -->
+        <section class="overlay overlay--start" id="start" aria-labelledby="game-title">
+          <div class="card">
+            <h1 class="logo" id="game-title"><span>Adivinhe o</span> Pokémon</h1>
+            <p class="card__lead">Descubra quem é pela silhueta. A cada erro, uma nova dica e a imagem se revela um pouco mais.</p>
+
+            <fieldset class="diff">
+              <legend>Dificuldade</legend>
+              <label><input type="radio" name="difficulty" value="easy" checked><span>Fácil<small>Geração 1</small></span></label>
+              <label><input type="radio" name="difficulty" value="medium"><span>Médio<small>Gerações 1 a 3</small></span></label>
+              <label><input type="radio" name="difficulty" value="hard"><span>Difícil<small>Todos</small></span></label>
+            </fieldset>
+
+            <button class="btn btn--primary btn--big" type="button" id="play-btn">Jogar</button>
+            <p class="card__record" id="record"></p>
+          </div>
+        </section>
+
+        <!-- ---------- Carregando ---------- -->
+        <section class="overlay overlay--loading" id="loading" aria-live="polite">
+          <div class="card card--small">
+            <div class="ball-spin" aria-hidden="true"></div>
+            <p>Sintonizando o próximo Pokémon…</p>
+          </div>
+        </section>
+
+        <!-- ---------- Erro ---------- -->
+        <section class="overlay overlay--error" id="error" role="alert">
+          <div class="card card--small">
+            <p class="card__title">Sem sinal!</p>
+            <p id="error-text">Não foi possível falar com a PokeAPI. Verifique a conexão e tente de novo.</p>
+            <button class="btn btn--primary" type="button" id="retry-btn">Tentar de novo</button>
+          </div>
+        </section>
+
+        <div class="flash" aria-hidden="true"></div>
+      </div>
+
+      <!-- ===== Painel da TV ===== -->
+      <div class="tv__panel" aria-hidden="true">
+        <span class="tv__led"></span>
+        <span class="tv__brand">Canal Pokémon</span>
+        <span class="tv__knobs"><i></i><i></i></span>
+      </div>
+    </div>
+  </main>
+
+  <noscript><p class="noscript">Este jogo precisa de JavaScript para funcionar.</p></noscript>
+</body>
+</html>
