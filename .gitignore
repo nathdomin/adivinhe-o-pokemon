@@ -1,0 +1,8 @@
+# Imagens de referência (não fazem parte do site)
+sources/
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
