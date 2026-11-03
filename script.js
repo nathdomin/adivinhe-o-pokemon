@@ -49,21 +49,23 @@ const $ = (selector) => document.querySelector(selector);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const decimal = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
-function makeStore(storage) {
+/* Até o simples acesso a window.localStorage pode lançar erro (cookies bloqueados,
+   modo privado). Por isso tudo fica dentro de try/catch e o jogo funciona sem ele. */
+function makeStore(getStorage) {
   return {
     get(key, fallback) {
       try {
-        const raw = storage.getItem(key);
+        const raw = getStorage().getItem(key);
         return raw === null ? fallback : JSON.parse(raw);
       } catch { return fallback; }
     },
     set(key, value) {
-      try { storage.setItem(key, JSON.stringify(value)); } catch { /* armazenamento indisponível */ }
+      try { getStorage().setItem(key, JSON.stringify(value)); } catch { /* armazenamento indisponível */ }
     },
   };
 }
-const local = makeStore(window.localStorage);
-const session = makeStore(window.sessionStorage);
+const local = makeStore(() => window.localStorage);
+const session = makeStore(() => window.sessionStorage);
 
 /* "Mr. Mime", "mr-mime" e "MR MIME" viram a mesma chave: "mrmime". */
 function normalize(text) {
