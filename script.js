@@ -152,9 +152,12 @@ const state = {
   score: 0,
   streak: 0,
   best: local.get('adp:best', { streak: 0, score: 0 }),
+  soundEnabled: local.get('adp:sound', true) !== false,
   round: null,
   busy: false,
 };
+
+let audioContext;
 
 const setState = (value) => { els.screen.dataset.state = value; };
 const setPhase = (value) => { els.screen.dataset.phase = value; };
@@ -394,6 +397,46 @@ function registerMiss(label) {
   retrigger(els.stage, 'is-wrong');
 }
 
+function scheduleNote(context, frequency, start, duration, type = 'sine', endFrequency = frequency) {
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, start);
+  oscillator.frequency.linearRampToValueAtTime(endFrequency, start + duration);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.14, start + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(start);
+  oscillator.stop(start + duration);
+}
+
+function playFeedbackSound(won) {
+  if (!state.soundEnabled || typeof window.AudioContext !== 'function') return;
+
+  try {
+    if (!audioContext) audioContext = new window.AudioContext();
+    const play = () => {
+      const start = audioContext.currentTime;
+      if (won) {
+        scheduleNote(audioContext, 523.25, start, 0.14);
+        scheduleNote(audioContext, 783.99, start + 0.12, 0.2);
+      } else {
+        scheduleNote(audioContext, 320, start, 0.24, 'triangle', 180);
+      }
+    };
+
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().then(play).catch((error) => console.error('Não foi possível reproduzir o efeito sonoro.', error));
+    } else {
+      play();
+    }
+  } catch (error) {
+    console.error('Não foi possível reproduzir o efeito sonoro.', error);
+  }
+}
+
 function submitGuess(raw) {
   const round = state.round;
   if (!round || round.over || state.busy) return;
@@ -418,8 +461,10 @@ function submitGuess(raw) {
   closeSuggestions();
 
   if (round.accepted.has(key)) {
+    playFeedbackSound(true);
     endRound(true);
   } else {
+    playFeedbackSound(false);
     setStatus(`${label} não é. Veja a nova dica!`);
     registerMiss(label);
   }
@@ -587,6 +632,22 @@ els.again.addEventListener('click', startRound);
 els.retry.addEventListener('click', startRound);
 els.menu.addEventListener('click', backToMenu);
 
+const soundToggles = document.querySelectorAll('.sound-toggle');
+function renderSoundToggles() {
+  soundToggles.forEach((button) => {
+    button.textContent = `Som: ${state.soundEnabled ? 'ligado' : 'desligado'}`;
+    button.setAttribute('aria-pressed', String(state.soundEnabled));
+  });
+}
+
+soundToggles.forEach((button) => {
+  button.addEventListener('click', () => {
+    state.soundEnabled = !state.soundEnabled;
+    local.set('adp:sound', state.soundEnabled);
+    renderSoundToggles();
+  });
+});
+
 document.querySelectorAll('input[name="difficulty"]').forEach((radio) => {
   radio.checked = radio.value === state.difficulty;
   radio.addEventListener('change', () => {
@@ -606,5 +667,6 @@ document.addEventListener('visibilitychange', () => {
 renderTries();
 renderHud();
 renderRecord();
+renderSoundToggles();
 powerOn();
 ensureNames().catch(() => { /* tenta de novo ao iniciar a rodada */ });
