@@ -125,10 +125,20 @@ body {
   position: relative;
   z-index: 1;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 1em;
 }
+
+.sound-toggle {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0.35em 0.65em;
+  font-size: 0.72em;
+  white-space: nowrap;
+}
+.sound-toggle--menu { min-height: 40px; }
 
 .hud__tries { display: flex; gap: 0.35em; }
 
